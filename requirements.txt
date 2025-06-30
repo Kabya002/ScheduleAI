@@ -26,6 +26,7 @@ httpx==0.28.1
 idna==3.10
 Jinja2==3.1.6
 jiter==0.10.0
+joblib==1.5.1
 jsonpatch==1.33
 jsonpointer==3.0.0
 jsonschema==4.24.0
@@ -40,6 +41,7 @@ langgraph-sdk==0.1.72
 langsmith==0.4.4
 MarkupSafe==3.0.2
 narwhals==1.44.0
+nltk==3.9.1
 numpy==2.3.1
 oauthlib==3.3.1
 openai==1.93.0
@@ -47,6 +49,7 @@ orjson==3.10.18
 ormsgpack==1.10.0
 packaging==24.2
 pandas==2.3.0
+parsedatetime==2.6
 pillow==11.2.1
 proto-plus==1.26.1
 protobuf==6.31.1
@@ -75,6 +78,7 @@ SQLAlchemy==2.0.41
 starlette==0.46.2
 streamlit==1.46.1
 tenacity==9.1.2
+textblob==0.19.0
 toml==0.10.2
 tornado==6.5.1
 tqdm==4.67.1

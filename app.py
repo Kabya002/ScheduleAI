@@ -1,3 +1,4 @@
+# File: app.py
 import streamlit as st
 from agent_graph import build_agent
 import traceback
@@ -21,12 +22,21 @@ if user_input:
 
     try:
         result = agent.invoke({"input": user_input})
-        if not result or not isinstance(result, dict):
-            response = "🤖 Internal error: agent did not return output."
+
+        # Full deep inspection
+        st.code(f"📤 Raw agent result:\n{result}", language="json")
+
+        # Narrow logic
+        if result is None:
+            response = "❌ Agent returned None. The graph may not be running correctly or is silently failing in a node."
+        elif not isinstance(result, dict):
+            response = f"⚠️ Agent returned non-dict: {type(result)}"
+        elif "output" not in result:
+            response = f"⚠️ No 'output' in result: {result}"
         else:
-            response = result.get("output", "🤖 Something went wrong.")
+            response = result["output"]
     except Exception as e:
-        response = f"❌ Agent failed: {str(e)}\n\n```\n{traceback.format_exc()}\n```"
+            response = f"❌ Agent failed: {str(e)}\n\n```{traceback.format_exc()}```"
 
     st.session_state.messages.append({"role": "assistant", "content": response})
     st.chat_message("assistant").write(response)
