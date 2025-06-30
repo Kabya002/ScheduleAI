@@ -1,10 +1,9 @@
-# 📁 File: app.py
 import streamlit as st
 from agent_graph import build_agent
 from calendar_tools import get_help_message
 import traceback
 
-st.set_page_config(page_title="🤖 TimeMate Scheduler", page_icon="🧠")
+st.set_page_config(page_title="🤖 TimeMate Scheduler")
 st.title("🤖 TimeMate: Schedule Smarter with AI")
 
 agent = build_agent()

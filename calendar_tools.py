@@ -1,4 +1,3 @@
-# 📁 File: calendar_tools.py
 from datetime import datetime, timedelta
 import requests
 import re
@@ -37,7 +36,7 @@ def clean_ordinal_suffixes(text):
 
 def extract_time_phrase(text):
     patterns = [
-        r"(this|next)\s+weekend",  # ✅ NEW pattern for "this weekend", "next weekend"
+        r"(this|next)\s+weekend",
         r"every\s+\w+",
         r"\d{1,2}(?:st|nd|rd|th)?\s+\w+\s+from\s+\d{1,2}(:\d{2})?\s?(am|pm)?\s+to\s+\d{1,2}(:\d{2})?\s?(am|pm)?",
         r"\d{1,2}(?:st|nd|rd|th)?\s+\w+\s+between\s+\d{1,2}(:\d{2})?\s?(am|pm)?\s+and\s+\d{1,2}(:\d{2})?\s?(am|pm)?",

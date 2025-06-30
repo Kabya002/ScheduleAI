@@ -1,5 +1,3 @@
-# 📁 File: agent_graph.py
-
 from langgraph.graph import StateGraph, END
 from langchain_core.runnables import RunnableLambda
 from calendar_tools import book_event, check_availability
@@ -36,7 +34,6 @@ def detect_intent(state: dict) -> str:
     else:
         return "fallback"
 
-
 def do_booking(state: dict):
     input_text = state.get("input", "")
     if not input_text:
@@ -58,14 +55,12 @@ def fallback_response(state: dict):
         "output": "🤔 I'm not sure what you meant. Try: 'Book a meeting tomorrow at 3 PM'."
     }
 
-
 def passthrough(state: dict):
     return state
 
 
 def build_agent():
     builder = StateGraph(dict)
-
     builder.add_node("router", RunnableLambda(passthrough))
     builder.add_node("book", RunnableLambda(do_booking))
     builder.add_node("check", RunnableLambda(do_availability))

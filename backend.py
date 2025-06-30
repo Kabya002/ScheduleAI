@@ -7,7 +7,6 @@ import json
 
 app = FastAPI()
 
-# Allow all CORS (for Streamlit frontend access)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
