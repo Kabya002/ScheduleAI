@@ -1,14 +1,17 @@
+# 📁 File: agent_graph.py
+
 from langgraph.graph import StateGraph, END
 from langchain_core.runnables import RunnableLambda
 from calendar_tools import book_event, check_availability
-from textblob import TextBlob  # Add this at the top if not already
+from textblob import TextBlob
+
 
 def detect_intent(state: dict) -> str:
     raw_input = state.get("input", "").strip()
 
     # ✨ Auto-correct typos using TextBlob
     corrected_input = str(TextBlob(raw_input).correct()).lower().strip()
-    print(f"🔍 Corrected input: {corrected_input}")  # Optional debug log
+    print(f"🔍 Corrected input: {corrected_input}")
 
     book_keywords = [
         "book", "schedule", "meeting", "set up", "call", "meet", "appointment", "arrange",
@@ -32,6 +35,7 @@ def detect_intent(state: dict) -> str:
         return "fallback"
     else:
         return "fallback"
+
 
 def do_booking(state: dict):
     input_text = state.get("input", "")

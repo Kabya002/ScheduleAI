@@ -23,11 +23,20 @@ def get_calendar_service():
     return build("calendar", "v3", credentials=creds)
 
 @app.post("/book")
-def book_meeting(title: str, start: str, end: str):
+def book_meeting(
+    title: str,
+    start: str,
+    end: str,
+    location: str = "",
+    description: str = ""
+):
+
     """Book a calendar event."""
     service = get_calendar_service()
     event = {
         "summary": title,
+        "location": location,
+        "description": description,
         "start": {
             "dateTime": start,
             "timeZone": "Asia/Kolkata"
@@ -37,6 +46,7 @@ def book_meeting(title: str, start: str, end: str):
             "timeZone": "Asia/Kolkata"
         }
     }
+
     created = service.events().insert(calendarId="primary", body=event).execute()
     return {"message": "Event created", "htmlLink": created.get("htmlLink")}
 
