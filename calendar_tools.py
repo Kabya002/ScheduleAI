@@ -228,6 +228,6 @@ def get_help_message():
         "• Meeting at 2 PM\n"
         "• Demo call for 30 minutes\n"
         "• Meeting with Ali at Zoom\n"
-        "• Set a call next weekend"
+        "• Set a call this weekend"
     )
 
