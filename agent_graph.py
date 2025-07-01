@@ -14,7 +14,7 @@ def detect_intent(state: dict) -> str:
     book_keywords = [
         "book", "schedule", "meeting", "set up", "call", "meet", "appointment", "arrange",
         "reserve", "organize", "setup", "fix", "make", "plan", "invite", "slot", "reserve time",
-        "block", "calendar", "schedule call", "book time", "set meeting", "create meeting"
+        "block", "calendar", "schedule call", "book time", "set meeting", "create meeting", "meeting"
     ]
 
     check_keywords = [
@@ -25,17 +25,16 @@ def detect_intent(state: dict) -> str:
 
     greeting_keywords = ["hi", "hello", "hey", "yo", "sup","greetings", "Hello", "Hi", "Hey", "Greetings", "howdy", "welcome", "good morning", "good afternoon", "good evening", "Welcome", "Thanks", "thank you", "thanks for your help", "thanks for helping me", "thank you for your help", "thank you for helping me", "thankyou", "Thank you", "Thank You","Wewlcome"]
 
-    if any(kw == corrected_input for kw in book_keywords):
+    if any(kw in corrected_input for kw in book_keywords):
         return "book"
     elif any(kw in corrected_input for kw in check_keywords):
         return "check"
-    elif any(kw == corrected_input for kw in greeting_keywords):
+    elif any(corrected_input.startswith(greet) for greet in greeting_keywords):
         return "greeting"
     elif len(corrected_input.split()) <= 2:
         return "fallback"
     else:
         return "fallback"
-
 
 def do_booking(state: dict):
     input_text = state.get("input", "")
@@ -55,7 +54,6 @@ def greeting_response(state: dict):
         "input": state.get("input", ""),
         "output": "👋 Hello! I'm your AI scheduling assistant.\nYou can say things like:\n- 'Book a meeting tomorrow at 3 PM'\n - Or type 'help' to see more examples!"
     }
-
 
 def fallback_response(state: dict):
     input_text = state.get("input", "")
