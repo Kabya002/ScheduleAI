@@ -25,7 +25,7 @@ if user_input:
     else:
         try:
             result = agent.invoke({"input": user_input})
-            st.code(f"📤 Raw agent result:\n{result}", language="json")
+            #st.code(f"📤 Raw agent result:\n{result}", language="json")
 
             if result is None:
                 response = "❌ Agent returned None. The graph may not be running correctly."

@@ -32,7 +32,9 @@ def extract_time_range(text):
     return None, None
 
 def clean_ordinal_suffixes(text):
-    return re.sub(r'(\d+)(st|nd|rd|th)', r'\1', text, flags=re.IGNORECASE)
+    text = re.sub(r'(\d+)(st|nd|rd|th)', r'\1', text, flags=re.IGNORECASE)
+    text = re.sub(r"\b(\d{1,2})\s*(am|pm)\b", lambda m: f"{m.group(1)} {m.group(2).upper()}", text, flags=re.IGNORECASE)
+    return text
 
 def extract_time_phrase(text):
     patterns = [
@@ -65,7 +67,6 @@ def extract_title(text, time_phrase):
 def book_event(input_text):
     cal = Calendar()
     print(f"📥 Original input: {input_text}")
-    
     if any(word in input_text.lower() for word in nonsense_keywords):
         return "❌ That doesn't seem like a real date or time. Please rephrase."
 
@@ -77,7 +78,6 @@ def book_event(input_text):
     parsed_time = None
     recurrence = None
 
-    # Handle recurring logic like "every Monday"
     if "every" in cleaned_phrase:
         match = re.search(r"every\s+(\w+)", cleaned_phrase)
         if match and match.group(1).lower() in weekday_map:
@@ -94,14 +94,15 @@ def book_event(input_text):
                 parsed_time, success = cal.parseDT(cleaned_phrase, sourceTime=datetime.now())
                 if not success or parsed_time < datetime.now():
                     parsed_time = None
+
             if not parsed_time:
                 if "this weekend" in lower_input:
                     today = datetime.now()
                     weekday = today.weekday()
-                    if weekday >= 5:  # Today is already the weekend
+                    if weekday >= 5:
                         parsed_time = today.replace(hour=10, minute=0)
                     else:
-                        days_ahead = (5 - weekday) % 7  # Move to Saturday
+                        days_ahead = (5 - weekday) % 7
                         parsed_time = today + timedelta(days=days_ahead)
                         parsed_time = parsed_time.replace(hour=10, minute=0)
                 elif "weekend" in lower_input:
@@ -109,7 +110,6 @@ def book_event(input_text):
                     days_ahead = (5 - today.weekday()) % 7
                     parsed_time = today + timedelta(days=days_ahead)
                     parsed_time = parsed_time.replace(hour=10, minute=0)
-
                 elif "this friday" in lower_input:
                     today = datetime.now()
                     days_ahead = (4 - today.weekday()) % 7
@@ -118,12 +118,31 @@ def book_event(input_text):
 
             if not parsed_time:
                 parsed_time = dateutil_parser.parse(cleaned_phrase, fuzzy=True)
-
         except Exception as e:
             print(f"❌ Parsing error: {e}")
             parsed_time = None
 
-    # Final fallback for time-only like "at 3 PM"
+    # Fallback for inputs like "2 PM" only
+    if not parsed_time and re.search(r"\b\d{1,2}\s*(am|pm)\b", cleaned_phrase, re.IGNORECASE):
+        try:
+            today = datetime.now()
+            time_part = re.search(r"\d{1,2}\s*(am|pm)", cleaned_phrase, re.IGNORECASE).group()
+            time_normalized = time_part.upper().replace(" ", "")
+            parsed_time = dateutil_parser.parse(f"{today.strftime('%Y-%m-%d')} {time_normalized}")
+            if parsed_time < today:
+                parsed_time += timedelta(days=1)
+        except Exception as e:
+            print(f"⚠️ Time-only fallback failed: {e}")
+
+    # Month-name fallback like "4 July"
+    if not parsed_time and re.search(r"\b\d{1,2}\s+\w{3,9}\b", cleaned_phrase, re.IGNORECASE):
+        try:
+            parsed_time = dateutil_parser.parse(cleaned_phrase, fuzzy=True)
+            if parsed_time < datetime.now():
+                parsed_time += timedelta(days=1)
+        except Exception as e:
+            print(f"⚠️ Month-date fallback failed: {e}")
+
     if not parsed_time:
         start_str, end_str = extract_time_range(input_text)
         if start_str and end_str:
@@ -137,21 +156,23 @@ def book_event(input_text):
             except:
                 parsed_time = datetime.now() + timedelta(days=1)
                 parsed_time = parsed_time.replace(hour=10, minute=0)
-    # Final backup
+
     if not parsed_time:
         return "❌ Sorry, I couldn’t understand the date or time. Please rephrase."
 
-    # Set timezone
-    parsed_time = parsed_time if parsed_time.tzinfo else LOCAL_TIMEZONE.localize(parsed_time)
+    if parsed_time.tzinfo is None:
+        parsed_time = LOCAL_TIMEZONE.localize(parsed_time)
+    else:
+        parsed_time = parsed_time.astimezone(LOCAL_TIMEZONE)
+
     now = datetime.now(LOCAL_TIMEZONE)
 
-    # Sanity checks
     if parsed_time.year < now.year or parsed_time < now - timedelta(days=1):
         return "❌ The date you mentioned seems incorrect. Please try again."
-    if parsed_time < now:
-        parsed_time += timedelta(days=1)
 
-    # Time range or duration
+    if parsed_time and parsed_time < now:
+        parsed_time = parsed_time + timedelta(days=1)
+
     start_str, end_str = extract_time_range(input_text)
     if start_str and end_str:
         try:
@@ -203,7 +224,7 @@ def check_availability():
     try:
         res = requests.get("http://127.0.0.1:8000/available")
         if res.status_code != 200:
-            return f"❌ Failed to fetch events. Status code: {res.status_code}"
+            return "⚠️ Calendar backend is unavailable. This feature only works locally."
         events = res.json().get("events", [])
         if not events:
             return "🎉 You're totally free in the next few days!"
@@ -216,8 +237,8 @@ def check_availability():
                 response += f"- **{name}** at `{readable}`\n"
         return response
     except Exception as e:
-        return f"❌ Error fetching availability: {e}"
-    
+        return "⚠️ Calendar API unavailable in this demo. Try booking instead."
+
 def get_help_message():
     return (
         "📝 **Need help?** You can try these formats:\n"
@@ -227,6 +248,5 @@ def get_help_message():
         "• Meeting at 2 PM\n"
         "• Demo call for 30 minutes\n"
         "• Meeting with Ali at Zoom\n"
-        "• Set a call this weekend"
+        "• Set a call next weekend"
     )
-
